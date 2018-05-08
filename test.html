@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--
+Name: Steve Vinsensius Jo
+ID : 2001621965
+4Direction
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Week 1</title>
+  <script type="text/javascript" src="babylon.custom.js">
+  </script>
+  <script type="text/javascript" src="func.js">
+  </script>
+  <link rel="stylesheet" type="text/css" href="testcss.css">
+</head>
+<body>
+
+  <canvas id="renderCanvas"></canvas>
+  <script>
+  var canvas, engine, scene, camera;
+  document.addEventListener("DOMContentLoaded", function()
+  {
+    canvas = document.getElementById("renderCanvas");
+
+    engine = new BABYLON.Engine(canvas, true);
+
+    scene = new BABYLON.Scene(engine);
+
+    gravity = new BABYLON.Vector3(0,-9.81,0);
+    physicsEngine = new BABYLON.CannonJSPlugin();
+
+    scene.enablePhysics(gravity,physicsEngine);
+
+    camera = new BABYLON.ArcRotateCamera("Camera",0,0,20, new BABYLON.Vector3(0,0,0),scene);
+
+    var cameraX = 0; // X coordinate
+    var cameraY = 10; // Y coordinate
+    var cameraZ = 20; // Z coordinate
+    var cameraAdded = 30;
+
+    camera.setPosition(new BABYLON.Vector3(cameraX,cameraY,cameraZ));
+    var light = new BABYLON.HemisphericLight("hLight", new BABYLON.Vector3(0, 0, 46), scene);
+
+    var mat = createMat(scene);
+    var mat2 = createMat2(scene);
+
+    var box = new BABYLON.Mesh.CreateBox("box", 1.0, scene);
+    // initialize X,Y,Z Position of the box
+    boxX = 0;
+    boxY = 0.5;
+    boxZ = 0;
+    boxAdd = 1; // move position
+    counter = 0;
+
+    ground = new BABYLON.Mesh.CreateGround("ground", 100,100,1,scene);
+
+    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground,  BABYLON.PhysicsImpostor.BoxImpostor, {mass:0, restitution:0.2,friction:0.2}, scene);
+
+    box.position = new BABYLON.Vector3(0, 2, 0);
+    box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor,
+    {mass:1, restitution:0.5, friction:0.2}, scene);
+
+    var monster = new BABYLON.Mesh.CreateBox("monster", 1.0, scene);
+    monster.position = new BABYLON.Vector3(-5,2,0);
+    monster.physicsImpostor = new BABYLON.PhysicsImpostor(monster, BABYLON.PhysicsImpostor.BoxImpostor,
+    {mass:1, restitution: 0.5, friction:0.2}, scene);
+
+    // key button click. 4Direction arrow
+    window.onkeydown = function(event){
+      // Right button
+     if(event.keyCode == 68 ){
+        box.position = new BABYLON.Vector3(boxX-boxAdd,boxY,boxZ);
+        boxX = boxX-boxAdd;
+     }
+     // Left arrow
+     if(event.keyCode == 65 ){
+        box.position = new BABYLON.Vector3(boxX+boxAdd,boxY,boxZ);
+        boxX = boxX+boxAdd;
+     }
+    }
+
+    box.material = mat;
+    monster.material = mat2;
+
+    var t = 0;
+    var renderLoop = function () {
+      scene.render();
+      t -= 0.01
+      monster.position.x = 5 + Math.sin(t*5);
+    }
+
+    engine.runRenderLoop(renderLoop);
+    engine.runRenderLoop(function()
+    {
+      if(box.intersectsMesh(monster, false)) {
+        if(counter == 0) {
+          box.scaling = new BABYLON.Vector3(0.5,0.5,0.5);
+          setTimeout(function () { counter++}, 500);
+        } else {
+          box.scaling = new BABYLON.Vector3(0,0,0);
+          counter++;
+        }
+      }
+      scene.render();
+
+    });
+  });
+</script>
+</body>
+</html>
